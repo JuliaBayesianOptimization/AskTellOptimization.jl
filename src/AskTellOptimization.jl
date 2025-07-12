@@ -1,7 +1,7 @@
 module AskTellOptimization
 
 using CommonSolve
-export Sense, BoxConstrainedProblem, SingleObjective
+export Min, Max, BoxConstrainedProblem, SingleObjective
 export SingleObjectiveOptimizer, ask!, tell!, solve
 
 # idea from https://github.com/jbrea/BayesianOptimization.jl
