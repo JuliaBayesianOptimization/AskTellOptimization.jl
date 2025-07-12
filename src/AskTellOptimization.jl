@@ -60,17 +60,17 @@ A `tell!` call can inform the `optimizer` about evaluations that were also not r
 For instance, include prior evalutions. How such calls are handled is implementation specific. 
 
 To use an `optimizer`, use [`solve(oracle::SingleObjective, optimizer::SingleObjectiveOptimizer; max_iterations)`](@ref) 
-or iteratively call `ask!` followed by `tell!` in way that matches your setting.
+or iteratively call `ask!` followed by `tell!` in a way that matches your setting.
 
 See also [`SingleObjective`](@ref).
 
 ## Intended Usage
 
-```
+```Julia
 optimizer = BayesianOptimizer(problem_spec::BoxConstrainedProblem; algo_specification_kwargs...)::SingleObjectiveOptimizer
 # pass initial evaluations
 tell!(optimizer, start_xs, start_ys; run_hyperparam_opt=true)
-solve(SingleObjective(f), optimizer; max_iterations=100)
+solution = solve(SingleObjective(f), optimizer; max_iterations=100)
 ```
 """
 abstract type SingleObjectiveOptimizer end
