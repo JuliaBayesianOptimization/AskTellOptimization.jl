@@ -38,18 +38,18 @@ struct SingleObjective
     objective::Function
 end
 
-# struct MultiObjective
-#     objectives
-# end
 # struct MultiFidelity
 #     objective
 #     simulation
+# end
+# struct MultiObjective
+#     objectives
 # end
 
 """
     abstract type SingleObjectiveOptimizer end 
 
-An interface for oracle-based single-objective optimization solvers.
+An interface for oracle-based, single-objective optimization solvers.
 
 An `optimizer` has to implement:
 - `ask!(optimizer; kwargs...)` returning a batch of points `xs` at which an objective function should be evaluated next
@@ -59,8 +59,10 @@ An `optimizer` has to implement:
 A `tell!` call can inform the `optimizer` about evaluations that were also not requested in `ask!`.
 For instance, include prior evalutions. How such calls are handled is implementation specific. 
 
-To use an `optimizer`, use [solve(oracle::SingleObjective, optimizer::SingleObjectiveOptimizer; max_iterations)](@ref) 
+To use an `optimizer`, use [`solve(oracle::SingleObjective, optimizer::SingleObjectiveOptimizer; max_iterations)`](@ref) 
 or iteratively call `ask!` followed by `tell!` in way that matches your setting.
+
+See also [`SingleObjective`](@ref).
 
 ## Intended Usage
 
