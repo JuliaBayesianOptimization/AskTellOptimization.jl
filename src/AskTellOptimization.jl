@@ -54,10 +54,10 @@ An interface for oracle-based, single-objective optimization solvers.
 An `optimizer` has to implement:
 - `ask!(optimizer; kwargs...)` returning a batch of points `xs` at which an objective function should be evaluated next
 - `tell!(optimizer, xs, ys; kwargs...)` processing evaluations `ys` at points `xs`
-- `solution(optimizer; kwargs...)` reporting a best solution found
+- `solution(optimizer; kwargs...)` reporting the best solution found so far
 
 A `tell!` call can inform the `optimizer` about evaluations that were also not requested in `ask!`.
-For instance, include prior evalutions. How such calls are handled is implementation specific. 
+For instance, include prior evaluations. How such calls are handled is implementation specific. 
 
 To use an `optimizer`, use [`solve(oracle::SingleObjective, optimizer::SingleObjectiveOptimizer; max_iterations)`](@ref) 
 or iteratively call `ask!` followed by `tell!` in a way that matches your setting.
