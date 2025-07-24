@@ -1,9 +1,15 @@
 module AskTellOptimization
 
-using CommonSolve
-export Min, Max, BoxConstrainedProblem, SingleObjective
-export SingleObjectiveOptimizer, ask!, tell!, solve
+# problem specs
+export Min, Max, BoxConstrainedProblem
+# oracle
+export Objective
+# AskTellOptimizer interface
+export ask!, tell!, solution
 
+########
+## Problem specs
+########
 # idea from https://github.com/jbrea/BayesianOptimization.jl
 """
     @enum Sense Min=-1 Max=1
@@ -11,104 +17,78 @@ export SingleObjectiveOptimizer, ask!, tell!, solve
 Optimization sense, either minimization or maximization.
 """
 @enum Sense Min=-1 Max=1
-
 """
     struct BoxConstrainedSpec{T,S}
+        sense::Sense
         lower_bounds::Vector{T}
         upper_bounds::Vector{S}
-        sense::Sense
     end
 
 Search specification for a box constrained optimization problem.
 """
 struct BoxConstrainedSpec{T,S}
+    sense::Sense
     lower_bounds::Vector{T}
     upper_bounds::Vector{S}
-    sense::Sense
 end
-
+#######
+## Evaluation oracles
+#######
 """
-    struct SingleObjective
-        objective::Function
+    struct Objective{F<:Function}
+        f::F 
     end
 
 Oracle evaluating a single objective function.
 """
-struct SingleObjective
-    objective::Function
+struct Objective{F<:Function}
+    f::F
 end
-
-# struct MultiFidelity
-#     objective
-#     simulation
+# struct MultiFidelity{O <: Function, S <: Function}
+#     objective::O
+#     simulation::S
 # end
 # struct MultiObjective
 #     objectives
 # end
 
 """
-    abstract type SingleObjectiveOptimizer end 
+    abstract type AskTellOptimizer end 
 
-An interface for oracle-based, single-objective optimization solvers.
+An interface for oracle-based optimization solvers.
 
-An `optimizer` has to implement:
-- `ask!(optimizer; kwargs...)` returning a batch of points `xs` at which an objective function should be evaluated next
-- `tell!(optimizer, xs, ys; kwargs...)` processing evaluations `ys` at points `xs`
-- `solution(optimizer; kwargs...)` reporting the best solution found so far
-
-A `tell!` call can inform the `optimizer` about evaluations that were also not requested in `ask!`.
-For instance, include prior evaluations. How such calls are handled is implementation specific. 
-
-To use an `optimizer`, use [`solve(oracle::SingleObjective, optimizer::SingleObjectiveOptimizer; max_iterations)`](@ref) 
-or iteratively call `ask!` followed by `tell!` in a way that matches your setting.
-
-See also [`SingleObjective`](@ref).
+An `OptimizerType <: AskTellOptimizer` has to implement:
+- `ask!(::OptimizerType, args...; kwargs...)` returning queries for an oracle evaluation
+- `tell!(::OptimizerType, args...; kwargs...)` processing oracle evaluations
+- `solution(::OptimizerType, args...; kwargs...)` reporting current results
+- `CommonSolve.solve(::OracleType, ::OptimizerType, args...; kwargs...)` implementing an optimization loop and returning a solution along with optimization statistics
 
 ## Intended Usage
 
+If the user *does not* want to control the optimization loop, a `CommonSolve.solve` method 
+should be called.
+
 ```Julia
-optimizer = BayesianOptimizer(problem_spec::BoxConstrainedProblem; algo_specification_kwargs...)::SingleObjectiveOptimizer
+optimizer = BayesOptGPs(problem_spec::BoxConstrainedProblem, args...; kwargs...)
 # pass initial evaluations
 tell!(optimizer, start_xs, start_ys; run_hyperparam_opt=true)
-solution = solve(SingleObjective(f), optimizer; max_iterations=100)
+solution, stats = solve(Objective(f), optimizer; max_iterations=100)
 ```
+
+```Julia
+optimizer = MultiFidelityBayesOptGPs(problem_spec; args...; kwargs...)
+# pass initial evaluations
+tell!(optimizer, start_xs_f, start_ys_f, start_xs_g, start_ys_g; run_hyperparam_opt=true)
+solution, stats = solve(MultiFidelity(f, g), optimizer; max_iterations=100)
+```
+
+Alternatively, for greater flexibility, the user can iteratively call `ask!` to obtain queries, 
+evaluate them and return the results via `tell!`. Finally, the user can call `solution` to 
+obtain a result.
 """
-abstract type SingleObjectiveOptimizer end
+abstract type AskTellOptimizer end
 function ask! end
 function tell! end
-
-# TODO: add max_time via Dates.Seconds
-"""
-    function CommonSolve.solve(
-        objective::SingleObjective, optimizer::SingleObjectiveOptimizer; max_iterations
-    )
-
-Iteratively query `objective` at points requested from `optimizer` until maximum number of 
-iterations is reached.
-
-See also [SingleObjective](@ref), [SingleObjectiveOptimizer](@ref).
-"""
-function CommonSolve.solve(
-    oracle::SingleObjective, optimizer::SingleObjectiveOptimizer; max_iterations
-)
-    for i in 1:max_iterations
-        xs = ask!(optimizer)
-        ys = (oracle.objective).(xs)
-        tell!(optimizer, xs, ys)
-    end
-    return solution(optimizer)
-end
-
-# """
-# `ask!` returns a request to either evaluate an objective or a cheaper substitute
-# `tell!` informs the solver about evaluations of either the objective or of the cheaper substitute
-# """
-# abstract type MultiFidelityOptimizer end
-
-# function CommonSolve.solve(
-#     oracle::MultiFidelity, optimizer::MultiFidelityOptimizer; max_iterations_objective
-# )
-#     # process requests of the solver until budget on objective fun. evaluation is exhausted
-# end
+function solution end
 
 end
