@@ -1,7 +1,7 @@
 module AskTellOptimization
 
 # problem specs
-export Min, Max, BoxConstrainedProblem
+export Min, Max, BoxConstrainedSpec
 # oracle
 export Objective
 # AskTellOptimizer interface
@@ -26,36 +26,36 @@ Optimization sense, either minimization or maximization.
 
 Search specification for a box constrained optimization problem.
 """
-struct BoxConstrainedSpec{T,S}
+struct BoxConstrainedSpec{S,T}
     sense::Sense
-    lower_bounds::Vector{T}
-    upper_bounds::Vector{S}
+    lower_bounds::Vector{S}
+    upper_bounds::Vector{T}
+    function BoxConstrainedSpec(
+        sense::Sense, lower_bounds::Vector{S}, upper_bounds::Vector{T}
+    ) where {S,T}
+        length(lower_bounds) == length(upper_bounds) || throw(
+            ArgumentError("length of lower_bounds differs from length of upper_bounds")
+        )
+        isempty(lower_bounds) && throw(ArgumentError("lower_bounds and upper_bounds are empty"))
+        all(lower_bounds .<= upper_bounds) || throw(ArgumentError("lower_bounds are not pointwise less or equal to upper_bounds"))
+        new{S,T}(sense, lower_bounds, upper_bounds)
+    end
 end
 #######
 ## Evaluation oracles
 #######
 """
-    struct Objective{F<:Function, I, O}
+    struct Objective{F<:Function}
         f::F
-        input_type::I
-        output_type::O
     end
 
 Oracle evaluating a single objective function.
-
-Specify concrete `input_type` and `output_type` of `f` to enable the solver to initialize 
-concrete data structures.
 """
-struct Objective{F<:Function, I, O}
+struct Objective{F<:Function}
     f::F
-    input_type::Type{I}
-    output_type::Type{O}
 end
-function Objective(f,input_type=Any, output_type=Any)
-   Objective(f, input_type, output_type)
-end 
 
-# struct MultiFidelity{H <: Objective, L <: Objective}
+# struct MultiFidelity{H <: Function, L <: Function}
 #     high_fidelity::H
 #     low_fidelity::L
 # end
