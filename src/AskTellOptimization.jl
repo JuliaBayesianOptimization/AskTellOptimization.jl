@@ -43,7 +43,7 @@ end
 
 Oracle evaluating a single objective function.
 
-Specify concrete `input_type` and `output_type` of `f` for allowing a solver to initialize 
+Specify concrete `input_type` and `output_type` of `f` to enable the solver to initialize 
 concrete data structures.
 """
 struct Objective{F<:Function, I, O}
