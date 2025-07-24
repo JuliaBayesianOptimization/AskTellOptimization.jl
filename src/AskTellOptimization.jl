@@ -35,18 +35,29 @@ end
 ## Evaluation oracles
 #######
 """
-    struct Objective{F<:Function}
-        f::F 
+    struct Objective{F<:Function, I, O}
+        f::F
+        input_type::I
+        output_type::O
     end
 
 Oracle evaluating a single objective function.
+
+Specify concrete `input_type` and `output_type` of `f` for allowing a solver to initialize 
+concrete data structures.
 """
-struct Objective{F<:Function}
+struct Objective{F<:Function, I, O}
     f::F
+    input_type::Type{I}
+    output_type::Type{O}
 end
-# struct MultiFidelity{O <: Function, S <: Function}
-#     objective::O
-#     simulation::S
+function Objective(f,input_type=Any, output_type=Any)
+   Objective(f, input_type, output_type)
+end 
+
+# struct MultiFidelity{H <: Objective, L <: Objective}
+#     high_fidelity::H
+#     low_fidelity::L
 # end
 # struct MultiObjective
 #     objectives
