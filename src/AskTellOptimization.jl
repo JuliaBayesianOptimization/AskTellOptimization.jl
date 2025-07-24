@@ -18,11 +18,7 @@ Optimization sense, either minimization or maximization.
 """
 @enum Sense Min=-1 Max=1
 """
-    struct BoxConstrainedSpec{T,S}
-        sense::Sense
-        lower_bounds::Vector{T}
-        upper_bounds::Vector{S}
-    end
+    BoxConstrainedSpec{S,T}
 
 Search specification for a box constrained optimization problem.
 """
@@ -30,6 +26,17 @@ struct BoxConstrainedSpec{S,T}
     sense::Sense
     lower_bounds::Vector{S}
     upper_bounds::Vector{T}
+    @doc """
+        function BoxConstrainedSpec(
+            sense::Sense, lower_bounds::Vector{S}, upper_bounds::Vector{T}
+        ) where {S,T}
+
+    # Throws
+
+    - `ArgumentError` if the length of lower_bounds does not match the length of upper_bounds
+    - `ArgumentError` if `lower_bounds` or `upper_bounds` is empty
+    - `ArgumentError` if `lower_bounds` is not pointwise less or equal to `upper_bounds`
+    """
     function BoxConstrainedSpec(
         sense::Sense, lower_bounds::Vector{S}, upper_bounds::Vector{T}
     ) where {S,T}
@@ -45,9 +52,7 @@ end
 ## Evaluation oracles
 #######
 """
-    struct Objective{F<:Function}
-        f::F
-    end
+    Objective{F<:Function}
 
 Oracle evaluating a single objective function.
 """
